@@ -1172,7 +1172,8 @@ class GameScene extends Phaser.Scene {
     const gap = 60;
     const totalW = cardCount * cardW + (cardCount - 1) * gap;
     const startX = (W - totalW) / 2;
-    const startY = H / 2 + 60;
+    const titleBottom = this.txtUpSub ? this.txtUpSub.y + 26 : H / 2 - 54;
+    const startY = titleBottom + 40;
 
     return { startX, startY, cardW, cardH, gap };
   }
