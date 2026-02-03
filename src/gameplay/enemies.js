@@ -221,7 +221,20 @@ class EnemySystem {
         break;
     }
 
+    enemy.hitFlash = 0;
+    if (type === 'boss' || type === 'boss2' || type === 'boss3') {
+      this.scene.currentBoss = enemy;
+    }
+
     this.enemies.push(enemy);
+  }
+
+  /**
+   * Trigger hit flash on an enemy
+   * @param {object} enemy - Enemy object
+   */
+  triggerHitFlash(enemy) {
+    enemy.hitFlash = 0.08;
   }
 
   /**
@@ -423,7 +436,8 @@ class EnemySystem {
         size: 12,
         color: 0x44aaff,
         glow: 0x6688cc,
-        pts: 8 + wave
+        pts: 8 + wave,
+        hitFlash: 0
       };
       this.enemies.push(drone);
       this.scene.burst(spawnX, spawnY, 0xffff00, 12, 100);
