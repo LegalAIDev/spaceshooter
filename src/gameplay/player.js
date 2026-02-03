@@ -198,9 +198,9 @@ class PlayerSystem {
 
     if (p.invuln > 0) return false;
 
-    // TANKS perk: Armor Plating - reduce damage by 25%
+    // TANKS perk: Armor Plating - reduce damage by 30%
     if (p.shipIdx === 1) {
-      amount *= 0.75;
+      amount *= 0.7;
     }
 
     // Shield absorbs damage first
@@ -235,7 +235,7 @@ class PlayerSystem {
   canRapidStrike() {
     if (this.player.shipIdx === 0) {  // VIPER
       this.player.shotCount++;
-      if (this.player.shotCount >= 5) {
+      if (this.player.shotCount >= 8) {
         this.player.shotCount = 0;
         return true;
       }

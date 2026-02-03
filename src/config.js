@@ -25,12 +25,13 @@ let selectedShip = 0;
 // ============================================================
 // PERSISTENT UPGRADES
 // These are permanent upgrades that persist between games
+// BALANCED: Reduced bonuses to prevent early-game trivialization
 // ============================================================
 const PERSISTENT_UPGRADES = {
-  maxHpBonus: {name: 'Max HP Boost', max: 5, bonus: 20, cost: 100},
-  damageBonus: {name: 'Damage Boost', max: 5, bonus: 15, cost: 150},
-  speedBonus: {name: 'Speed Boost', max: 5, bonus: 10, cost: 120},
-  startingShield: {name: 'Starting Shield', max: 3, bonus: 25, cost: 180}
+  maxHpBonus: {name: 'Max HP Boost', max: 5, bonus: 15, cost: 100},
+  damageBonus: {name: 'Damage Boost', max: 5, bonus: 8, cost: 150},
+  speedBonus: {name: 'Speed Boost', max: 5, bonus: 5, cost: 120},
+  startingShield: {name: 'Starting Shield', max: 3, bonus: 20, cost: 180}
 };
 
 // ============================================================
@@ -62,13 +63,13 @@ const SHIPS = [
     desc: 'Balanced fighter',
     baseHp: 100,
     baseSpeed: 240,
-    baseDmg: 25,
-    baseRate: 140,
+    baseDmg: 24,
+    baseRate: 145,
     dashCD: 0.75,
     col2: '#00ffff',
     stats: {firepower: 75, speed: 80, defense: 65, mobility: 85},
     perk: 'RAPID STRIKE',
-    perkDesc: 'Every 5th shot fires instantly',
+    perkDesc: 'Every 8th shot fires instantly',
     perkColor: '#00ffff'
   },
   {
@@ -78,13 +79,13 @@ const SHIPS = [
     desc: 'Heavy — slow & sturdy',
     baseHp: 150,
     baseSpeed: 185,
-    baseDmg: 20,
-    baseRate: 165,
+    baseDmg: 22,
+    baseRate: 155,
     dashCD: 0.90,
     col2: '#7733ff',
     stats: {firepower: 60, speed: 50, defense: 95, mobility: 45},
     perk: 'ARMOR PLATING',
-    perkDesc: 'Reduce damage taken by 25%',
+    perkDesc: 'Reduce damage taken by 30%',
     perkColor: '#7733ff'
   },
   {
@@ -94,8 +95,8 @@ const SHIPS = [
     desc: 'Fast — glass cannon',
     baseHp: 70,
     baseSpeed: 310,
-    baseDmg: 32,
-    baseRate: 110,
+    baseDmg: 28,
+    baseRate: 155,
     dashCD: 0.55,
     col2: '#ff6600',
     stats: {firepower: 95, speed: 100, defense: 35, mobility: 90},

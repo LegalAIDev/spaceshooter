@@ -378,7 +378,8 @@ class GameScene extends Phaser.Scene {
       this.spawnT = 0;
       this.showWaveMsg('⚡ MINI-BOSS ⚡', '#ffaa00', 1.2);
     } else {
-      const count = Math.min(6 + this.wave * 2.5, 45) | 0;
+      const baseCount = 6 + this.wave * 2.5;
+      const count = Math.min(baseCount, 80) | 0;
       for (let i = 0; i < count; i++) {
         const r = Math.random();
         if (this.wave <= 2) this.spawnQ.push('drone');
