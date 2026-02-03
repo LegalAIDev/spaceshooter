@@ -845,6 +845,86 @@ class GameScene extends Phaser.Scene {
         this.gEn.arc(ex, ey, e.size + 6, sa + Math.PI, sa + Math.PI + arc);
         this.gEn.strokePath();
       }
+      else if (e.type === 'tank') {
+        const pulse = 0.95 + Math.sin(t * 3) * 0.05;
+        const size = e.size * 1.25 * pulse;
+        const rot = t * 0.4;
+        this.gEn.fillStyle(flashColor, flashAlpha);
+        this.gEn.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = rot + (i / 6) * Math.PI * 2;
+          this.gEn.lineTo(ex + Math.cos(a) * size, ey + Math.sin(a) * size * 0.9);
+        }
+        this.gEn.closePath();
+        this.gEn.fillPath();
+        this.gEn.lineStyle(4, e.glow, 0.9);
+        this.gEn.strokePath();
+      }
+      else if (e.type === 'scout') {
+        const a = e.angle;
+        const size = e.size * 1.05;
+        this.gEn.fillStyle(flashColor, e.hitFlash > 0 ? 1.0 : 0.85);
+        this.gEn.beginPath();
+        this.gEn.moveTo(ex + Math.cos(a) * size * 1.6, ey + Math.sin(a) * size * 1.6);
+        this.gEn.lineTo(ex + Math.cos(a + 2.4) * size, ey + Math.sin(a + 2.4) * size);
+        this.gEn.lineTo(ex + Math.cos(a - 2.4) * size, ey + Math.sin(a - 2.4) * size);
+        this.gEn.closePath();
+        this.gEn.fillPath();
+        this.gEn.lineStyle(2, e.glow, 0.85);
+        this.gEn.strokePath();
+        this.gEn.lineStyle(2, e.glow, 0.9);
+        this.gEn.beginPath();
+        this.gEn.moveTo(ex, ey);
+        this.gEn.lineTo(ex + Math.cos(a) * size * 2.0, ey + Math.sin(a) * size * 2.0);
+        this.gEn.strokePath();
+      }
+      else if (e.type === 'drone') {
+        const size = e.size * 0.9;
+        const podOffset = size * 1.05;
+        const podSize = size * 0.35;
+        const rot = t * 0.8;
+        this.gEn.fillStyle(flashColor, e.hitFlash > 0 ? 1.0 : 0.8);
+        this.gEn.beginPath();
+        this.gEn.arc(ex, ey, size, 0, Math.PI * 2);
+        this.gEn.fillPath();
+        this.gEn.fillStyle(flashColor, e.hitFlash > 0 ? 1.0 : 0.7);
+        this.gEn.beginPath();
+        this.gEn.arc(ex + Math.cos(rot + Math.PI / 2) * podOffset, ey + Math.sin(rot + Math.PI / 2) * podOffset, podSize, 0, Math.PI * 2);
+        this.gEn.arc(ex + Math.cos(rot - Math.PI / 2) * podOffset, ey + Math.sin(rot - Math.PI / 2) * podOffset, podSize, 0, Math.PI * 2);
+        this.gEn.fillPath();
+        this.gEn.lineStyle(2, e.glow, 0.85);
+        this.gEn.strokeCircle(ex, ey, size);
+      }
+      else if (e.type === 'swarm') {
+        const pulse = 0.7 + Math.sin(t * 6) * 0.2;
+        const size = e.size * 0.7;
+        this.gEn.fillStyle(flashColor, e.hitFlash > 0 ? 1.0 : 0.75);
+        this.gEn.beginPath();
+        this.gEn.moveTo(ex, ey - size);
+        this.gEn.lineTo(ex + size, ey);
+        this.gEn.lineTo(ex, ey + size);
+        this.gEn.lineTo(ex - size, ey);
+        this.gEn.closePath();
+        this.gEn.fillPath();
+        this.gEn.lineStyle(2, e.glow, pulse);
+        this.gEn.strokePath();
+      }
+      else if (e.type === 'sniper') {
+        const size = e.size;
+        const a = e.angle;
+        const barrelLen = size * 2.4 + Math.sin(t * 2) * 3;
+        this.gEn.fillStyle(flashColor, e.hitFlash > 0 ? 1.0 : 0.8);
+        this.gEn.beginPath();
+        this.gEn.arc(ex, ey, size, 0, Math.PI * 2);
+        this.gEn.fillPath();
+        this.gEn.lineStyle(2, e.glow, 0.85);
+        this.gEn.strokeCircle(ex, ey, size);
+        this.gEn.lineStyle(3, e.glow, 0.9);
+        this.gEn.beginPath();
+        this.gEn.moveTo(ex + Math.cos(a) * size, ey + Math.sin(a) * size);
+        this.gEn.lineTo(ex + Math.cos(a) * barrelLen, ey + Math.sin(a) * barrelLen);
+        this.gEn.strokePath();
+      }
       else {
         // Standard enemy
         this.gEn.fillStyle(flashColor, flashAlpha);
