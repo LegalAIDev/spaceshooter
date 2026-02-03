@@ -39,13 +39,16 @@ class MenuScene extends Phaser.Scene {
     
     // Ship selection
     this.add.text(W / 2, 230, 'SELECT YOUR SHIP', {
-      fontSize: '20px',
+      fontSize: '22px',
       fontFamily: '"Courier New"',
       color: '#ffffff'
     }).setOrigin(0.5).setDepth(10);
     
     this.shipGraphics = [];
     const shipSpacing = Math.min(250, Math.max(180, (W - 200) / 2));
+    const shipCardWidth = 210;
+    const shipCardHeight = 330;
+    const shipCardTopOffset = 135;
     SHIPS.forEach((s, i) => {
       const cx = W / 2 - shipSpacing + i * shipSpacing;
       const cy = 345;
@@ -54,7 +57,12 @@ class MenuScene extends Phaser.Scene {
       // Selection highlight
       if(i === selectedShip) {
         g.lineStyle(3, Phaser.Display.Color.ValueToColor(s.color).color, 0.8);
-        g.strokeRect(cx - 95, cy - 125, 190, 260);
+        g.strokeRect(
+          cx - shipCardWidth / 2,
+          cy - shipCardTopOffset,
+          shipCardWidth,
+          shipCardHeight
+        );
       }
       
       // Ship preview
@@ -62,17 +70,18 @@ class MenuScene extends Phaser.Scene {
       
       // Ship name
       this.add.text(cx, cy + 50, s.name, {
-        fontSize: '18px',
+        fontSize: '20px',
         fontFamily: '"Courier New"',
-        color: s.col2
+        color: s.col2,
+        fontStyle: 'bold'
       }).setOrigin(0.5).setDepth(12);
       
       // Description
-      this.add.text(cx, cy + 72, s.desc, {
-        fontSize: '11px',
+      this.add.text(cx, cy + 74, s.desc, {
+        fontSize: '12px',
         fontFamily: '"Courier New"',
-        color: '#889999'
-      }).setOrigin(0.5).setDepth(12).setAlpha(0.85);
+        color: '#aab6c4'
+      }).setOrigin(0.5).setDepth(12).setAlpha(0.9);
       
       // Stats bars
       const stats = ['firepower', 'speed', 'defense', 'mobility'];
@@ -84,9 +93,9 @@ class MenuScene extends Phaser.Scene {
         const val = s.stats[stat];
         
         this.add.text(cx - 75, sy, statNames[si], {
-          fontSize: '8px',
+          fontSize: '9px',
           fontFamily: '"Courier New"',
-          color: '#667788'
+          color: '#99aabb'
         }).setDepth(12);
         
         const barG = this.add.graphics().setDepth(12);
@@ -98,20 +107,26 @@ class MenuScene extends Phaser.Scene {
       
       // Ship perk
       this.add.text(cx, cy + 170, s.perk, {
-        fontSize: '10px',
+        fontSize: '11px',
         fontFamily: '"Courier New"',
-        color: s.perkColor
-      }).setOrigin(0.5).setDepth(12).setAlpha(0.9);
+        color: s.perkColor,
+        fontStyle: 'bold'
+      }).setOrigin(0.5).setDepth(12).setAlpha(0.95);
       
-      this.add.text(cx, cy + 183, s.perkDesc, {
-        fontSize: '8px',
+      this.add.text(cx, cy + 186, s.perkDesc, {
+        fontSize: '9px',
         fontFamily: '"Courier New"',
-        color: '#889999',
-        wordWrap: {width: 160}
-      }).setOrigin(0.5).setDepth(12).setAlpha(0.7);
+        color: '#a8b4c2',
+        wordWrap: {width: 170}
+      }).setOrigin(0.5).setDepth(12).setAlpha(0.85);
       
       // Click zone
-      const zone = this.add.zone(cx, cy, 190, 260).setInteractive();
+      const zone = this.add.zone(
+        cx,
+        cy - shipCardTopOffset + shipCardHeight / 2,
+        shipCardWidth,
+        shipCardHeight
+      ).setInteractive();
       zone.on('pointerdown', () => {
         selectedShip = i;
         savePersistent();
