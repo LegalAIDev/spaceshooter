@@ -60,17 +60,22 @@ class WeaponSystem {
     const w = this.weapon;
 
     const effectiveRate = slowActive ? w.rate * 0.35 : w.rate;
+    const minFireRate = 85;
+    const safeRate = Math.max(minFireRate, effectiveRate);
 
     // Check if can fire
-    if (time - this.lastFired < effectiveRate && !rapidStrike) return false;
+    if (time - this.lastFired < safeRate && !rapidStrike) return false;
 
     const ang = player.angle;
     const spd = w.spd + wave * 5;
-    const dmg = w.dmg + wave * 2;
+    const waveDamageBonus = wave <= 10
+      ? wave * 1.5
+      : 15 + (wave - 10) * 1.0;
+    const dmg = w.dmg + waveDamageBonus;
 
     // VIPER perk: Rapid strike - fire immediately
     if (rapidStrike) {
-      this.lastFired = time - w.rate;
+      this.lastFired = time - safeRate;
     } else {
       this.lastFired = time;
     }
@@ -123,8 +128,8 @@ class WeaponSystem {
   fireStandard(player, ang, spd, dmg) {
     const w = this.weapon;
 
-    // Check if this is a mega shot (every 7th)
-    const isMega = w.mega && this.megaCounter >= 6;
+    // Check if this is a mega shot (every 10th)
+    const isMega = w.mega && this.megaCounter >= 9;
     if (w.mega) {
       this.megaCounter = isMega ? 0 : this.megaCounter + 1;
     }
@@ -132,7 +137,7 @@ class WeaponSystem {
     // Adjust for mega shot
     if (isMega) {
       spd *= 0.78;
-      dmg *= 3;
+      dmg *= 2;
     }
 
     // Fire based on weapon type
@@ -257,7 +262,8 @@ class WeaponSystem {
 
         const d = dist(b.x, b.y, e.x, e.y);
         if (d < e.size + 3 * b.size) {
-          e.hp -= b.dmg;
+          const damageMultiplier = b.pierce ? 0.75 : 1;
+          e.hp -= b.dmg * damageMultiplier;
           e.hitFlash = 0.08;
           this.scene.burst(e.x, e.y, e.color, 5, 60);
           sfx('enemyHit');

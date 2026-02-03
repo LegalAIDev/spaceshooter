@@ -6,6 +6,25 @@
  * create new enemy types, and modify how enemies behave!
  */
 
+/**
+ * Calculate enemy HP with hybrid linear/exponential scaling.
+ * Linear growth for waves 1-10, exponential growth for waves 11+.
+ * @param {number} baseHP - Base HP value.
+ * @param {number} hpPerWave - HP increase per wave (linear portion).
+ * @param {number} wave - Current wave number.
+ * @param {number} lateGameMultiplier - Exponential multiplier for waves 11+.
+ * @returns {number} - Calculated HP.
+ */
+function calculateEnemyHP(baseHP, hpPerWave, wave, lateGameMultiplier = 1.12) {
+  if (wave <= 10) {
+    return baseHP + wave * hpPerWave;
+  }
+
+  const wave10HP = baseHP + 10 * hpPerWave;
+  const additionalWaves = wave - 10;
+  return Math.floor(wave10HP * Math.pow(lateGameMultiplier, additionalWaves));
+}
+
 class EnemySystem {
   constructor(scene) {
     this.scene = scene;
@@ -32,7 +51,7 @@ class EnemySystem {
     // Set stats based on enemy type
     switch (type) {
       case 'drone':
-        enemy.hp = 30 + wave * 8;
+        enemy.hp = calculateEnemyHP(30, 12, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 90 + wave * 3;
         enemy.size = 14;
@@ -43,7 +62,7 @@ class EnemySystem {
         break;
 
       case 'scout':
-        enemy.hp = 18 + wave * 4;
+        enemy.hp = calculateEnemyHP(18, 7, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 155 + wave * 4;
         enemy.size = 9;
@@ -54,7 +73,7 @@ class EnemySystem {
         break;
 
       case 'tank':
-        enemy.hp = 120 + wave * 22;
+        enemy.hp = calculateEnemyHP(120, 30, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 52 + wave;
         enemy.size = 26;
@@ -64,7 +83,7 @@ class EnemySystem {
         break;
 
       case 'shieldE':
-        enemy.hp = 55 + wave * 10;
+        enemy.hp = calculateEnemyHP(55, 15, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 48 + wave;
         enemy.size = 20;
@@ -75,7 +94,7 @@ class EnemySystem {
         break;
 
       case 'swarm':
-        enemy.hp = 70 + wave * 12;
+        enemy.hp = calculateEnemyHP(70, 18, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 75 + wave * 3;
         enemy.size = 18;
@@ -86,7 +105,7 @@ class EnemySystem {
         break;
 
       case 'sniper':
-        enemy.hp = 40 + wave * 7;
+        enemy.hp = calculateEnemyHP(40, 11, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 65 + wave * 2;
         enemy.size = 12;
@@ -100,7 +119,7 @@ class EnemySystem {
         break;
 
       case 'healer':
-        enemy.hp = 50 + wave * 8;
+        enemy.hp = calculateEnemyHP(50, 12, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 60 + wave * 2;
         enemy.size = 16;
@@ -112,7 +131,7 @@ class EnemySystem {
         break;
 
       case 'spawner':
-        enemy.hp = 80 + wave * 15;
+        enemy.hp = calculateEnemyHP(80, 22, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 55 + wave;
         enemy.size = 22;
@@ -125,7 +144,7 @@ class EnemySystem {
         break;
 
       case 'bomber':
-        enemy.hp = 35 + wave * 6;
+        enemy.hp = calculateEnemyHP(35, 9, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 85 + wave * 3;
         enemy.size = 13;
@@ -136,7 +155,7 @@ class EnemySystem {
         break;
 
       case 'teleporter':
-        enemy.hp = 45 + wave * 7;
+        enemy.hp = calculateEnemyHP(45, 11, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 70 + wave * 2;
         enemy.size = 14;
@@ -148,7 +167,7 @@ class EnemySystem {
         break;
 
       case 'kamikaze':
-        enemy.hp = 25 + wave * 5;
+        enemy.hp = calculateEnemyHP(25, 8, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 100 + wave * 3;
         enemy.size = 11;
@@ -161,7 +180,7 @@ class EnemySystem {
         break;
 
       case 'artillery':
-        enemy.hp = 60 + wave * 10;
+        enemy.hp = calculateEnemyHP(60, 15, wave);
         enemy.maxHp = enemy.hp;
         enemy.speed = 50 + wave;
         enemy.size = 18;
@@ -175,9 +194,9 @@ class EnemySystem {
         break;
 
       case 'boss':
-        enemy.hp = 800 + wave * 180;
+        enemy.hp = calculateEnemyHP(800, 220, wave, 1.15);
         enemy.maxHp = enemy.hp;
-        enemy.speed = 85;
+        enemy.speed = wave <= 10 ? 85 : 85 + (wave - 10) * 2;
         enemy.size = 45;
         enemy.color = 0xff0066;
         enemy.glow = 0xff4488;
@@ -191,9 +210,9 @@ class EnemySystem {
         break;
 
       case 'boss2':
-        enemy.hp = 900 + wave * 200;
+        enemy.hp = calculateEnemyHP(900, 250, wave, 1.15);
         enemy.maxHp = enemy.hp;
-        enemy.speed = 95;
+        enemy.speed = wave <= 10 ? 95 : 95 + (wave - 10) * 2;
         enemy.size = 48;
         enemy.color = 0x00ff88;
         enemy.glow = 0x44ffaa;
@@ -206,9 +225,9 @@ class EnemySystem {
         break;
 
       case 'boss3':
-        enemy.hp = 750 + wave * 160;
+        enemy.hp = calculateEnemyHP(750, 200, wave, 1.15);
         enemy.maxHp = enemy.hp;
-        enemy.speed = 100;
+        enemy.speed = wave <= 10 ? 100 : 100 + (wave - 10) * 2;
         enemy.size = 42;
         enemy.color = 0xff8800;
         enemy.glow = 0xffaa44;
@@ -222,9 +241,9 @@ class EnemySystem {
         break;
 
       case 'miniboss':
-        enemy.hp = 350 + wave * 80;
+        enemy.hp = calculateEnemyHP(350, 110, wave, 1.14);
         enemy.maxHp = enemy.hp;
-        enemy.speed = 80;
+        enemy.speed = wave <= 10 ? 80 : 80 + (wave - 10) * 1.5;
         enemy.size = 35;
         enemy.color = 0xff44ff;
         enemy.glow = 0xff88ff;

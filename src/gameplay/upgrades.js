@@ -62,8 +62,8 @@ class UpgradeSystem {
       {
         name: 'RAPID FIRE',
         desc: 'Increase fire rate',
-        ok: () => w.rate > 65,
-        apply: () => { w.rate = Math.max(65, w.rate - w.rate * 0.18); }
+        ok: () => w.rate > 85,
+        apply: () => { w.rate = Math.max(85, w.rate - w.rate * 0.12); }
       },
       {
         name: 'PIERCING',
@@ -79,7 +79,7 @@ class UpgradeSystem {
       },
       {
         name: 'MEGA BLAST',
-        desc: 'Every 7th shot explodes',
+        desc: 'Every 10th shot explodes',
         ok: () => !w.mega,
         apply: () => { w.mega = true; }
       },
@@ -92,19 +92,25 @@ class UpgradeSystem {
       {
         name: 'MAX HEALTH',
         desc: '+30 HP and heal',
-        ok: () => true,
+        ok: () => {
+          const timesTaken = (p.maxHp - SHIPS[p.shipIdx].baseHp) / 30;
+          return timesTaken < 2;
+        },
         apply: () => { p.maxHp += 30; p.hp = Math.min(p.maxHp, p.hp + 30); }
       },
       {
         name: 'SPEED UP',
         desc: '+18% movement speed',
-        ok: () => true,
+        ok: () => {
+          const baseSpeed = SHIPS[p.shipIdx].baseSpeed;
+          return p.speed < baseSpeed * 1.5;
+        },
         apply: () => { p.speed *= 1.18; }
       },
       {
         name: 'ENERGY SHIELD',
         desc: '+50 shield capacity',
-        ok: () => true,
+        ok: () => p.maxShield < 150,
         apply: () => {
           p.maxShield += 50;
           p.shield = Math.min(p.maxShield, p.shield + 50);
@@ -113,8 +119,8 @@ class UpgradeSystem {
       {
         name: 'REGEN',
         desc: 'Passive heal',
-        ok: () => true,
-        apply: () => { stats.regenRate += 2.2; }
+        ok: () => stats.regenRate < 4.0,
+        apply: () => { stats.regenRate += 1.5; }
       },
       {
         name: 'QUICK DASH',
