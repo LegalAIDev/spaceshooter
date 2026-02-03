@@ -165,6 +165,18 @@ class UpgradeSystem {
   hide() {
     this.scene.upgradeMode = false;
     this.scene.upgrades = [];
+
+    if (this.scene.txtUpTitle) this.scene.txtUpTitle.setVisible(false);
+    if (this.scene.txtUpSub) this.scene.txtUpSub.setVisible(false);
+
+    if (this.scene.upTexts && this.scene.upTexts.length > 0) {
+      this.scene.upTexts.forEach(t => {
+        if (t && t.destroy) t.destroy();
+      });
+      this.scene.upTexts = [];
+    }
+
+    if (this.scene.gUp) this.scene.gUp.clear();
   }
 
   /**

@@ -121,7 +121,10 @@ class EffectsSystem {
         break;
 
       case 'shield':
-        player.shield = Math.min(Math.max(50, player.maxShield), player.shield + 25);
+        if (player.maxShield < 50) {
+          player.maxShield = 50;
+        }
+        player.shield = Math.min(player.maxShield, player.shield + 25);
         this.burst(pickup.x, pickup.y, 0x00aaff, 10, 80);
         break;
 

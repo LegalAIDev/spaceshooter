@@ -328,6 +328,18 @@ function sfx(name) {
       beep(180, 'sawtooth', 0.12, 0.15);
       beep(90, 'sawtooth', 0.08, 0.20, 0.05);
       break;
+    case 'enemyDieTank':
+      beep(80, 'sawtooth', 0.15, 0.25);
+      beep(50, 'sawtooth', 0.12, 0.35, 0.08);
+      break;
+    case 'enemyDieScout':
+      beep(300, 'triangle', 0.10, 0.10);
+      beep(200, 'triangle', 0.08, 0.15, 0.03);
+      break;
+    case 'enemyDieSniper':
+      beep(400, 'sine', 0.08, 0.12);
+      beep(200, 'sine', 0.06, 0.18, 0.04);
+      break;
     case 'dash':
       beep(600, 'sine', 0.08, 0.12);
       beep(800, 'sine', 0.06, 0.15, 0.03);
@@ -345,6 +357,10 @@ function sfx(name) {
     case 'slowmo':
       beep(60, 'sine', 0.08, 0.35);
       beep(40, 'sine', 0.06, 0.50, 0.15);
+      break;
+    case 'heartbeat':
+      beep(60, 'sine', 0.12, 0.15);
+      beep(50, 'sine', 0.08, 0.12, 0.12);
       break;
     case 'bossDie':
       beep(100, 'sawtooth', 0.15, 0.40);

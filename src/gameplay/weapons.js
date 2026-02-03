@@ -31,7 +31,7 @@ class WeaponSystem {
       type: 'single',
       rate: ship.baseRate,
       dmg: bonuses.baseDmg,
-      spd: 350,
+      spd: 580,
       pierce: false,
       homing: false,
       mega: false,
@@ -40,7 +40,9 @@ class WeaponSystem {
       ricochetsLeft: 2,
       shotgun: false,
       laser: false,
-      bulletSize: 1.0
+      bulletSize: 1.0,
+      totalDamageDealt: 0,
+      bulletsExpired: 0
     };
 
     return this.weapon;
@@ -54,11 +56,13 @@ class WeaponSystem {
    * @param {boolean} rapidStrike - VIPER rapid strike active
    * @returns {boolean} - True if fired
    */
-  fire(time, player, wave, rapidStrike) {
+  fire(time, player, wave, rapidStrike, slowActive = false) {
     const w = this.weapon;
 
+    const effectiveRate = slowActive ? w.rate * 0.35 : w.rate;
+
     // Check if can fire
-    if (time - this.lastFired < w.rate && !rapidStrike) return false;
+    if (time - this.lastFired < effectiveRate && !rapidStrike) return false;
 
     const ang = player.angle;
     const spd = w.spd + wave * 5;
@@ -254,6 +258,7 @@ class WeaponSystem {
         const d = dist(b.x, b.y, e.x, e.y);
         if (d < e.size + 3 * b.size) {
           e.hp -= b.dmg;
+          e.hitFlash = 0.08;
           this.scene.burst(e.x, e.y, e.color, 5, 60);
           sfx('enemyHit');
 
