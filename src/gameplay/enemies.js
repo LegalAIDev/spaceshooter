@@ -39,6 +39,7 @@ class EnemySystem {
         enemy.color = 0x44aaff;
         enemy.glow = 0x6688cc;
         enemy.pts = 10 + wave * 2;
+        enemy.rotAngle = 0; // For rotation animation
         break;
 
       case 'scout':
@@ -49,6 +50,7 @@ class EnemySystem {
         enemy.color = 0x88ff44;
         enemy.glow = 0x66cc44;
         enemy.pts = 15 + wave * 2;
+        enemy.thrusterT = 0; // For thruster animation
         break;
 
       case 'tank':
@@ -80,6 +82,7 @@ class EnemySystem {
         enemy.color = 0xff88ff;
         enemy.glow = 0xcc66cc;
         enemy.pts = 28 + wave * 3;
+        enemy.orbitA = 0; // For orbiting triangles
         break;
 
       case 'sniper':
@@ -105,6 +108,7 @@ class EnemySystem {
         enemy.glow = 0x00cc66;
         enemy.pts = 40 + wave * 4;
         enemy.healT = 2.0;
+        enemy.pulseT = 0; // For pulsing animation
         break;
 
       case 'spawner':
@@ -117,6 +121,7 @@ class EnemySystem {
         enemy.pts = 50 + wave * 5;
         enemy.spawnT = 4.0;
         enemy.spawnCount = 0;
+        enemy.rotAngle = 0; // For star rotation
         break;
 
       case 'bomber':
@@ -139,6 +144,7 @@ class EnemySystem {
         enemy.glow = 0xcc00cc;
         enemy.pts = 38 + wave * 3;
         enemy.teleT = 2.5;
+        enemy.flickerT = 0; // For flicker effect
         break;
 
       case 'kamikaze':
@@ -151,6 +157,7 @@ class EnemySystem {
         enemy.pts = 30 + wave * 3;
         enemy.charging = false;
         enemy.chargeSpeed = 280;
+        enemy.thrusterT = 0; // For thruster animation
         break;
 
       case 'artillery':
@@ -164,6 +171,7 @@ class EnemySystem {
         enemy.minRange = 200;
         enemy.shootT = 1.8;
         enemy.rotAngle = 0;
+        enemy.turretAngle = 0; // For turret rotation
         break;
 
       case 'boss':
@@ -178,6 +186,8 @@ class EnemySystem {
         enemy.shootT = 1.5;
         enemy.orbitA = 0;
         enemy.chargeT = 5.0;
+        enemy.rotAngle = 0; // For rotation
+        enemy.ringRotAngle = 0; // For outer ring
         break;
 
       case 'boss2':
@@ -191,6 +201,8 @@ class EnemySystem {
         enemy.phase = 1;
         enemy.shootT = 1.2;
         enemy.spiralA = 0;
+        enemy.rotAngle = 0;
+        enemy.bladeAngle = 0; // For rotating blades
         break;
 
       case 'boss3':
@@ -205,6 +217,8 @@ class EnemySystem {
         enemy.shootT = 1.0;
         enemy.spawnT = 8.0;
         enemy.chaseT = 0;
+        enemy.rotAngle = 0;
+        enemy.pulseT = 0; // For pulsing core
         break;
 
       case 'miniboss':
@@ -218,6 +232,7 @@ class EnemySystem {
         enemy.shootT = 1.8;
         enemy.orbitA = 0;
         enemy.pulseT = 0;
+        enemy.rotAngle = 0;
         break;
     }
 
@@ -258,6 +273,16 @@ class EnemySystem {
         continue;
       }
 
+      // Update rotation animations
+      if (e.rotAngle !== undefined) e.rotAngle += dt * 2;
+      if (e.ringRotAngle !== undefined) e.ringRotAngle += dt * 1.5;
+      if (e.bladeAngle !== undefined) e.bladeAngle += dt * 3;
+      if (e.turretAngle !== undefined) e.turretAngle += dt * 0.5;
+      if (e.orbitA !== undefined) e.orbitA += dt * 4;
+      if (e.pulseT !== undefined) e.pulseT += dt * 3;
+      if (e.flickerT !== undefined) e.flickerT += dt * 8;
+      if (e.thrusterT !== undefined) e.thrusterT += dt * 10;
+
       // Update based on type
       switch (e.type) {
         case 'healer': this.updateHealer(e, dt, player); break;
@@ -288,7 +313,6 @@ class EnemySystem {
     }
   }
 
-  // ... (continued in next part due to length)
   /**
    * Standard enemy AI - chase player
    */
@@ -437,7 +461,8 @@ class EnemySystem {
         color: 0x44aaff,
         glow: 0x6688cc,
         pts: 8 + wave,
-        hitFlash: 0
+        hitFlash: 0,
+        rotAngle: 0
       };
       this.enemies.push(drone);
       this.scene.burst(spawnX, spawnY, 0xffff00, 12, 100);
@@ -511,6 +536,9 @@ class EnemySystem {
     }
 
     e.rotAngle += dt * Math.PI * 0.5;
+
+    // Aim turret at player
+    e.turretAngle = Math.atan2(player.y - e.y, player.x - e.x);
 
     e.shootT -= dt;
     if (e.shootT <= 0 && d >= e.minRange) {
@@ -681,5 +709,572 @@ class EnemySystem {
     }
 
     return totalDamage;
+  }
+
+  /**
+   * Draw an enemy with its unique shape
+   * @param {Phaser.GameObjects.Graphics} g - Graphics object
+   * @param {object} e - Enemy object
+   * @param {number} x - X position (with shake)
+   * @param {number} y - Y position (with shake)
+   * @param {number} t - Current time
+   */
+  drawEnemy(g, e, x, y, t) {
+    const hpPct = e.hp / e.maxHp;
+    const flashColor = e.hitFlash > 0 ? 0xffffff : e.color;
+    const flashAlpha = e.hitFlash > 0 ? 1.0 : 0.75;
+
+    switch (e.type) {
+      case 'drone':
+        this.drawDrone(g, e, x, y, flashColor, flashAlpha);
+        break;
+      case 'scout':
+        this.drawScout(g, e, x, y, flashColor, flashAlpha);
+        break;
+      case 'tank':
+        this.drawTank(g, e, x, y, flashColor, flashAlpha);
+        break;
+      case 'shieldE':
+        this.drawShieldEnemy(g, e, x, y, flashColor, flashAlpha, t);
+        break;
+      case 'swarm':
+        this.drawSwarm(g, e, x, y, flashColor, flashAlpha);
+        break;
+      case 'sniper':
+        this.drawSniper(g, e, x, y, flashColor, flashAlpha);
+        break;
+      case 'healer':
+        this.drawHealer(g, e, x, y, flashColor, flashAlpha);
+        break;
+      case 'spawner':
+        this.drawSpawner(g, e, x, y, flashColor, flashAlpha);
+        break;
+      case 'bomber':
+        this.drawBomber(g, e, x, y, flashColor, flashAlpha, t);
+        break;
+      case 'teleporter':
+        this.drawTeleporter(g, e, x, y, flashColor, flashAlpha);
+        break;
+      case 'kamikaze':
+        this.drawKamikaze(g, e, x, y, flashColor, flashAlpha);
+        break;
+      case 'artillery':
+        this.drawArtillery(g, e, x, y, flashColor, flashAlpha);
+        break;
+      case 'boss':
+        this.drawBoss1(g, e, x, y, flashColor, flashAlpha, hpPct, t);
+        break;
+      case 'boss2':
+        this.drawBoss2(g, e, x, y, flashColor, flashAlpha, hpPct, t);
+        break;
+      case 'boss3':
+        this.drawBoss3(g, e, x, y, flashColor, flashAlpha, hpPct, t);
+        break;
+      case 'miniboss':
+        this.drawMiniBoss(g, e, x, y, flashColor, flashAlpha, hpPct, t);
+        break;
+    }
+  }
+
+  // ============================================================
+  // ENEMY DRAWING FUNCTIONS
+  // ============================================================
+
+  drawDrone(g, e, x, y, color, alpha) {
+    // Triangle with rotating ring
+    g.fillStyle(color, alpha);
+    g.beginPath();
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2 - Math.PI / 2;
+      const px = x + Math.cos(a) * e.size;
+      const py = y + Math.sin(a) * e.size;
+      if (i === 0) g.moveTo(px, py);
+      else g.lineTo(px, py);
+    }
+    g.closePath();
+    g.fillPath();
+    g.lineStyle(2, e.glow, 0.8);
+    g.strokePath();
+
+    // Rotating ring
+    g.lineStyle(1.5, e.glow, 0.6);
+    g.beginPath();
+    g.arc(x, y, e.size * 1.3, e.rotAngle, e.rotAngle + Math.PI);
+    g.strokePath();
+  }
+
+  drawScout(g, e, x, y, color, alpha) {
+    // Elongated diamond/dart
+    const length = e.size * 1.8;
+    const width = e.size * 0.7;
+    
+    g.fillStyle(color, alpha);
+    g.beginPath();
+    g.moveTo(x + length, y);
+    g.lineTo(x, y - width);
+    g.lineTo(x - length * 0.5, y);
+    g.lineTo(x, y + width);
+    g.closePath();
+    g.fillPath();
+    g.lineStyle(1.5, e.glow, 0.9);
+    g.strokePath();
+
+    // Thruster flames
+    if (Math.sin(e.thrusterT) > 0) {
+      g.fillStyle(0xff6600, 0.7);
+      g.beginPath();
+      g.moveTo(x - length * 0.5, y);
+      g.lineTo(x - length * 0.8, y - width * 0.3);
+      g.lineTo(x - length * 0.8, y + width * 0.3);
+      g.closePath();
+      g.fillPath();
+    }
+  }
+
+  drawTank(g, e, x, y, color, alpha) {
+    // Hexagon with armor plates
+    g.fillStyle(0x0a0a2a, alpha);
+    g.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      g.lineTo(x + Math.cos(a) * e.size, y + Math.sin(a) * e.size);
+    }
+    g.closePath();
+    g.fillPath();
+    
+    g.lineStyle(2.5, color, 0.85);
+    g.strokePath();
+
+    // Inner hexagon
+    g.fillStyle(color, 0.35);
+    g.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 + Math.PI / 6;
+      g.lineTo(x + Math.cos(a) * e.size * 0.5, y + Math.sin(a) * e.size * 0.5);
+    }
+    g.closePath();
+    g.fillPath();
+
+    // Armor plates on corners
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      g.fillStyle(e.glow, 0.7);
+      g.fillRect(
+        x + Math.cos(a) * e.size * 0.9 - 2,
+        y + Math.sin(a) * e.size * 0.9 - 2,
+        4, 4
+      );
+    }
+  }
+
+  drawShieldEnemy(g, e, x, y, color, alpha, t) {
+    // Circle with rotating shield arcs
+    g.fillStyle(color, alpha * 0.7);
+    g.beginPath();
+    g.arc(x, y, e.size, 0, Math.PI * 2);
+    g.fillPath();
+    g.lineStyle(2, e.glow, 0.75);
+    g.strokePath();
+
+    // Rotating shield arcs
+    const sa = e.shieldA || 0;
+    const arc = Math.PI * 0.7;
+    g.lineStyle(3, 0x33ccff, 0.6 + Math.sin(t * 4) * 0.2);
+    g.beginPath();
+    g.arc(x, y, e.size + 6, sa, sa + arc);
+    g.strokePath();
+    g.beginPath();
+    g.arc(x, y, e.size + 6, sa + Math.PI, sa + Math.PI + arc);
+    g.strokePath();
+  }
+
+  drawSwarm(g, e, x, y, color, alpha) {
+    // Main body
+    g.fillStyle(color, alpha * 0.6);
+    g.beginPath();
+    g.arc(x, y, e.size * 0.7, 0, Math.PI * 2);
+    g.fillPath();
+
+    // Orbiting triangles
+    for (let i = 0; i < 3; i++) {
+      const a = e.orbitA + (i / 3) * Math.PI * 2;
+      const ox = x + Math.cos(a) * e.size;
+      const oy = y + Math.sin(a) * e.size;
+      
+      g.fillStyle(color, alpha);
+      g.beginPath();
+      for (let j = 0; j < 3; j++) {
+        const ta = a + (j / 3) * Math.PI * 2;
+        const px = ox + Math.cos(ta) * e.size * 0.3;
+        const py = oy + Math.sin(ta) * e.size * 0.3;
+        if (j === 0) g.moveTo(px, py);
+        else g.lineTo(px, py);
+      }
+      g.closePath();
+      g.fillPath();
+    }
+
+    g.lineStyle(2, e.glow, 0.8);
+    g.strokeCircle(x, y, e.size * 0.7);
+  }
+
+  drawSniper(g, e, x, y, color, alpha) {
+    // Long narrow rectangle with scope line
+    const length = e.size * 2.2;
+    const width = e.size * 0.5;
+    
+    g.fillStyle(color, alpha);
+    g.fillRect(x - length / 2, y - width / 2, length, width);
+    g.lineStyle(2, e.glow, 0.8);
+    g.strokeRect(x - length / 2, y - width / 2, length, width);
+
+    // Scope line extending forward
+    if (e.charging) {
+      g.lineStyle(1, 0xff0000, 0.5);
+      g.beginPath();
+      g.moveTo(x + length / 2, y);
+      g.lineTo(x + length * 3, y);
+      g.strokePath();
+    }
+
+    // Lens/eye
+    g.fillStyle(e.charging ? 0xff0000 : 0x00ffff, 0.9);
+    g.fillCircle(x, y, width * 0.6);
+  }
+
+  drawHealer(g, e, x, y, color, alpha) {
+    // Cross/plus shape with pulsing center
+    const pulseScale = 1 + Math.sin(e.pulseT) * 0.15;
+    const size = e.size * pulseScale;
+    
+    g.fillStyle(color, alpha * 0.8);
+    g.beginPath();
+    g.arc(x, y, size, 0, Math.PI * 2);
+    g.fillPath();
+    g.lineStyle(2, e.glow, 0.7);
+    g.strokePath();
+
+    // Cross symbol
+    const crossSize = size * 0.6;
+    g.fillStyle(0xffffff, 0.9);
+    g.fillRect(x - crossSize, y - crossSize * 0.25, crossSize * 2, crossSize * 0.5);
+    g.fillRect(x - crossSize * 0.25, y - crossSize, crossSize * 0.5, crossSize * 2);
+
+    // Healing aura
+    if (e.healT < 0.3) {
+      const auraAlpha = 1 - (e.healT / 0.3);
+      g.lineStyle(2, 0x00ff88, auraAlpha * 0.5);
+      g.strokeCircle(x, y, size * (1 + auraAlpha * 0.5));
+    }
+  }
+
+  drawSpawner(g, e, x, y, color, alpha) {
+    // Star/pentagon with rotating angle
+    const points = 5;
+    g.fillStyle(color, alpha);
+    g.beginPath();
+    for (let i = 0; i < points; i++) {
+      const a = e.rotAngle + (i / points) * Math.PI * 2;
+      const radius = i % 2 === 0 ? e.size : e.size * 0.5;
+      const px = x + Math.cos(a) * radius;
+      const py = y + Math.sin(a) * radius;
+      if (i === 0) g.moveTo(px, py);
+      else g.lineTo(px, py);
+    }
+    g.closePath();
+    g.fillPath();
+    g.lineStyle(2, e.glow, 0.8);
+    g.strokePath();
+
+    // Spawn ports at each point
+    for (let i = 0; i < points; i++) {
+      if (i % 2 === 0) {
+        const a = e.rotAngle + (i / points) * Math.PI * 2;
+        const px = x + Math.cos(a) * e.size;
+        const py = y + Math.sin(a) * e.size;
+        g.fillStyle(e.glow, 0.8);
+        g.fillCircle(px, py, 3);
+      }
+    }
+  }
+
+  drawBomber(g, e, x, y, color, alpha, t) {
+    // Circle with jagged/spiky outer ring
+    const pulseSize = e.size * (1 + Math.sin(e.pulseT) * 0.2);
+    
+    g.fillStyle(color, alpha * 0.85);
+    g.beginPath();
+    g.arc(x, y, pulseSize, 0, Math.PI * 2);
+    g.fillPath();
+    
+    // Jagged outer ring
+    const spikes = 8;
+    g.lineStyle(2, 0xff0000, 0.6 + Math.sin(t * 6) * 0.3);
+    g.beginPath();
+    for (let i = 0; i <= spikes; i++) {
+      const a = (i / spikes) * Math.PI * 2;
+      const radius = i % 2 === 0 ? pulseSize * 1.3 : pulseSize * 1.1;
+      const px = x + Math.cos(a) * radius;
+      const py = y + Math.sin(a) * radius;
+      if (i === 0) g.moveTo(px, py);
+      else g.lineTo(px, py);
+    }
+    g.strokePath();
+
+    // Warning fuse
+    g.fillStyle(0xff0000, 0.9);
+    g.fillRect(x - 1.5, y - pulseSize * 0.6, 3, pulseSize * 0.4);
+    g.fillCircle(x, y - pulseSize * 0.7, 3);
+  }
+
+  drawTeleporter(g, e, x, y, color, alpha) {
+    // Fragmented diamond with flickering edges
+    const flicker = Math.sin(e.flickerT) * 0.3 + 0.7;
+    
+    g.fillStyle(color, alpha * flicker * 0.8);
+    g.beginPath();
+    g.moveTo(x, y - e.size);
+    g.lineTo(x + e.size * 0.7, y);
+    g.lineTo(x, y + e.size);
+    g.lineTo(x - e.size * 0.7, y);
+    g.closePath();
+    g.fillPath();
+
+    // Flickering outline segments
+    const segments = 4;
+    for (let i = 0; i < segments; i++) {
+      if (Math.sin(e.flickerT + i) > 0) {
+        g.lineStyle(2, e.glow, flicker * 0.9);
+        g.beginPath();
+        if (i === 0) { g.moveTo(x, y - e.size); g.lineTo(x + e.size * 0.7, y); }
+        if (i === 1) { g.moveTo(x + e.size * 0.7, y); g.lineTo(x, y + e.size); }
+        if (i === 2) { g.moveTo(x, y + e.size); g.lineTo(x - e.size * 0.7, y); }
+        if (i === 3) { g.moveTo(x - e.size * 0.7, y); g.lineTo(x, y - e.size); }
+        g.strokePath();
+      }
+    }
+
+    // Core
+    g.fillStyle(0xff00ff, flicker);
+    g.fillCircle(x, y, e.size * 0.4);
+  }
+
+  drawKamikaze(g, e, x, y, color, alpha) {
+    // Pointed arrow/chevron shape
+    const length = e.size * 1.5;
+    const width = e.size * 0.8;
+    
+    g.fillStyle(color, alpha * 0.9);
+    g.beginPath();
+    g.moveTo(x + length, y);
+    g.lineTo(x - length * 0.3, y - width);
+    g.lineTo(x - length * 0.3, y + width);
+    g.closePath();
+    g.fillPath();
+    g.lineStyle(2, e.glow, 0.9);
+    g.strokePath();
+
+    // Thruster flames (more intense when charging)
+    const thrusterIntensity = e.charging ? 1.0 : 0.6;
+    if (Math.sin(e.thrusterT) > -0.3) {
+      g.fillStyle(0xff6600, thrusterIntensity * 0.8);
+      g.beginPath();
+      g.moveTo(x - length * 0.3, y);
+      g.lineTo(x - length * 0.9, y - width * 0.5);
+      g.lineTo(x - length * 0.9, y + width * 0.5);
+      g.closePath();
+      g.fillPath();
+
+      g.fillStyle(0xffff00, thrusterIntensity);
+      g.beginPath();
+      g.moveTo(x - length * 0.3, y);
+      g.lineTo(x - length * 0.7, y - width * 0.3);
+      g.lineTo(x - length * 0.7, y + width * 0.3);
+      g.closePath();
+      g.fillPath();
+    }
+  }
+
+  drawArtillery(g, e, x, y, color, alpha) {
+    // Square base with rotating turret
+    g.fillStyle(color, alpha * 0.8);
+    g.beginPath();
+    for (let i = 0; i < 4; i++) {
+      const a = e.rotAngle + (i / 4) * Math.PI * 2;
+      g.lineTo(x + Math.cos(a) * e.size, y + Math.sin(a) * e.size);
+    }
+    g.closePath();
+    g.fillPath();
+    g.lineStyle(2, e.glow, 0.75);
+    g.strokePath();
+
+    // Turret barrel
+    const barrelLength = e.size * 1.2;
+    const barrelWidth = e.size * 0.3;
+    g.fillStyle(e.glow, 0.9);
+    g.save();
+    g.translateCanvas(x, y);
+    g.rotateCanvas(e.turretAngle);
+    g.fillRect(0, -barrelWidth / 2, barrelLength, barrelWidth);
+    g.restore();
+
+    // Center mount
+    g.fillStyle(0x0a0a2a, 1);
+    g.fillCircle(x, y, e.size * 0.5);
+    g.lineStyle(2, color, 0.8);
+    g.strokeCircle(x, y, e.size * 0.5);
+  }
+
+  drawBoss1(g, e, x, y, color, alpha, hpPct, t) {
+    // Multi-layered compound shape with core + rotating outer rings
+    
+    // Outer rotating ring
+    g.lineStyle(4, e.glow, 0.7);
+    g.beginPath();
+    g.arc(x, y, e.size * 1.2, e.ringRotAngle, e.ringRotAngle + Math.PI * 1.5);
+    g.strokePath();
+
+    // Main body - hexagon
+    g.fillStyle(color, alpha);
+    g.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = e.rotAngle + (i / 6) * Math.PI * 2;
+      g.lineTo(x + Math.cos(a) * e.size, y + Math.sin(a) * e.size);
+    }
+    g.closePath();
+    g.fillPath();
+    g.lineStyle(3, e.glow, 0.9);
+    g.strokePath();
+
+    // Inner core
+    g.fillStyle(0xff0066, 0.8);
+    g.fillCircle(x, y, e.size * 0.5);
+    g.lineStyle(2, 0xffffff, 0.4 + Math.sin(t * 3) * 0.2);
+    g.strokeCircle(x, y, e.size * 0.4);
+
+    // Detail elements at points
+    for (let i = 0; i < 6; i++) {
+      const a = e.rotAngle + (i / 6) * Math.PI * 2;
+      g.fillStyle(0xffffff, 0.7);
+      g.fillCircle(
+        x + Math.cos(a) * e.size * 0.9,
+        y + Math.sin(a) * e.size * 0.9,
+        4
+      );
+    }
+
+    // Boss HP bar
+    this.drawBossHPBar(g, e, x, y, hpPct);
+  }
+
+  drawBoss2(g, e, x, y, color, alpha, hpPct, t) {
+    // Core with rotating blades
+    
+    // Rotating blades
+    for (let i = 0; i < 4; i++) {
+      const a = e.bladeAngle + (i / 4) * Math.PI * 2;
+      g.lineStyle(5, e.glow, 0.8);
+      g.beginPath();
+      g.moveTo(x, y);
+      g.lineTo(x + Math.cos(a) * e.size * 1.4, y + Math.sin(a) * e.size * 1.4);
+      g.strokePath();
+    }
+
+    // Main circular body
+    g.fillStyle(color, alpha);
+    g.beginPath();
+    g.arc(x, y, e.size, 0, Math.PI * 2);
+    g.fillPath();
+    g.lineStyle(3, e.glow, 0.9);
+    g.strokePath();
+
+    // Pulsing inner rings
+    const pulseSize = 1 + Math.sin(t * 3) * 0.1;
+    g.lineStyle(2, 0xffffff, 0.6);
+    g.strokeCircle(x, y, e.size * 0.7 * pulseSize);
+    g.strokeCircle(x, y, e.size * 0.4 * pulseSize);
+
+    // Boss HP bar
+    this.drawBossHPBar(g, e, x, y, hpPct);
+  }
+
+  drawBoss3(g, e, x, y, color, alpha, hpPct, t) {
+    // Pulsing core with energy corona
+    
+    // Energy corona
+    const coronaSize = e.size * (1.4 + Math.sin(e.pulseT) * 0.2);
+    g.lineStyle(3, e.glow, 0.5);
+    g.strokeCircle(x, y, coronaSize);
+
+    // Main octagon body
+    g.fillStyle(color, alpha);
+    g.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const a = e.rotAngle + (i / 8) * Math.PI * 2;
+      g.lineTo(x + Math.cos(a) * e.size, y + Math.sin(a) * e.size);
+    }
+    g.closePath();
+    g.fillPath();
+    g.lineStyle(3, e.glow, 0.9);
+    g.strokePath();
+
+    // Pulsing core
+    const coreSize = e.size * 0.5 * (1 + Math.sin(e.pulseT) * 0.15);
+    g.fillStyle(0xff8800, 0.9);
+    g.fillCircle(x, y, coreSize);
+
+    // Detail rings
+    g.lineStyle(2, 0xffffff, 0.5);
+    g.strokeCircle(x, y, e.size * 0.7);
+
+    // Boss HP bar
+    this.drawBossHPBar(g, e, x, y, hpPct);
+  }
+
+  drawMiniBoss(g, e, x, y, color, alpha, hpPct, t) {
+    // Rotating diamond with pulsing core
+    
+    const pulseScale = 1 + Math.sin(e.pulseT) * 0.1;
+    
+    // Outer diamond
+    g.fillStyle(color, alpha);
+    g.beginPath();
+    g.moveTo(x, y - e.size * pulseScale);
+    g.lineTo(x + e.size * 0.8 * pulseScale, y);
+    g.lineTo(x, y + e.size * pulseScale);
+    g.lineTo(x - e.size * 0.8 * pulseScale, y);
+    g.closePath();
+    g.fillPath();
+    g.lineStyle(3, e.glow, 0.9);
+    g.strokePath();
+
+    // Inner rotating diamond
+    g.fillStyle(0xff44ff, 0.7);
+    g.beginPath();
+    const innerSize = e.size * 0.5;
+    g.moveTo(x, y - innerSize);
+    g.lineTo(x + innerSize * 0.8, y);
+    g.lineTo(x, y + innerSize);
+    g.lineTo(x - innerSize * 0.8, y);
+    g.closePath();
+    g.fillPath();
+
+    // Pulsing center
+    g.fillStyle(0xffffff, pulseScale * 0.8);
+    g.fillCircle(x, y, e.size * 0.2);
+
+    // Boss HP bar (mini version)
+    this.drawBossHPBar(g, e, x, y, hpPct);
+  }
+
+  drawBossHPBar(g, e, x, y, hpPct) {
+    const barW = e.size * 2.2;
+    const barH = 6;
+    const barY = y + e.size + 18;
+    
+    g.fillStyle(0x220000, 0.7);
+    g.fillRect(x - barW / 2, barY, barW, barH);
+    g.fillStyle(0xff0000, 0.9);
+    g.fillRect(x - barW / 2, barY, barW * hpPct, barH);
   }
 }
